@@ -2,6 +2,7 @@
 #define SET_SET_H
 
 #include <vector>
+#include <cstddef>
 
 template<class ValueType> class Set {
 public:
@@ -31,47 +32,47 @@ public:
         Node* prev = nullptr;
     };
 
-    Node* find(ValueType value, Node* t) const {
-        if (t == nullptr) {
+    Node* find(ValueType value, Node* tree) const {
+        if (tree == nullptr) {
             return nullptr;
         }
-        if (t->val < value) {
-            return find(value, t->right);
-        } else if (value < t->val) {
-            return find(value, t->left);
+        if (tree->val < value) {
+            return find(value, tree->right);
+        } else if (value < tree->val) {
+            return find(value, tree->left);
         } else {
-            return t;
+            return tree;
         }
     }
 
-    Node* lower_bound(ValueType value, Node* t) const {
-        if (t == nullptr) {
+    Node* lower_bound(ValueType value, Node* tree) const {
+        if (tree == nullptr) {
             return nullptr;
         }
-        if (t->val < value) {
-            return lower_bound(value, t->right);
-        } else if (value < t->val) {
-            Node* node = lower_bound(value, t->left);
+        if (tree->val < value) {
+            return lower_bound(value, tree->right);
+        } else if (value < tree->val) {
+            Node* node = lower_bound(value, tree->left);
             if (node == nullptr) {
-                return t;
+                return tree;
             } else {
                 return node;
             }
         } else {
-            return t;
+            return tree;
         }
     }
 
-    Node* find_next(ValueType value, Node* t) const {
-        if (t == nullptr) {
+    Node* find_next(ValueType value, Node* tree) const {
+        if (tree == nullptr) {
             return nullptr;
         }
-        if (t->val < value) {
-            return find_next(value, t->right);
-        } else if (value < t->val) {
-            Node* node = find_next(value, t->left);
+        if (tree->val < value) {
+            return find_next(value, tree->right);
+        } else if (value < tree->val) {
+            Node* node = find_next(value, tree->left);
             if (node == nullptr) {
-                return t;
+                return tree;
             } else {
                 return node;
             }
@@ -80,195 +81,195 @@ public:
         }
     }
 
-    Node* find_prev(ValueType value, Node* t) const {
-        if (t == nullptr) {
+    Node* find_prev(ValueType value, Node* tree) const {
+        if (tree == nullptr) {
             return nullptr;
         }
-        if (t->val < value) {
-            Node* node = find_prev(value, t->right);
+        if (tree->val < value) {
+            Node* node = find_prev(value, tree->right);
             if (node == nullptr) {
-                return t;
+                return tree;
             } else {
                 return node;
             }
 
-        } else if (value < t->val) {
-            return find_prev(value, t->left);
+        } else if (value < tree->val) {
+            return find_prev(value, tree->left);
         } else {
             return nullptr;
         }
     }
 
-    Node* insert(const ValueType& value, Node* t) {
-        if (t == nullptr) {
-            t = new Node(value);
+    Node* insert(const ValueType& value, Node* tree) {
+        if (tree == nullptr) {
+            tree = new Node(value);
             if (cnt == 0) {
-                root = t;
+                root = tree;
             }
-            t->next = find_next(value, root);
-            t->prev = find_prev(value, root);
-            if (t->prev) {
-                t->prev->next = t;
+            tree->next = find_next(value, root);
+            tree->prev = find_prev(value, root);
+            if (tree->prev) {
+                tree->prev->next = tree;
             }
-            if (t->next) {
-                t->next->prev = t;
+            if (tree->next) {
+                tree->next->prev = tree;
             }
             ++cnt;
-            to_delete.push_back(t);
-            return t;
-        } else if (t->val < value) {
-            t->right = insert(value, t->right);
-        } else if (value < t->val) {
-            t->left = insert(value, t->left);
+            to_delete.push_back(tree);
+            return tree;
+        } else if (tree->val < value) {
+            tree->right = insert(value, tree->right);
+        } else if (value < tree->val) {
+            tree->left = insert(value, tree->left);
         }
-        pull(t);
-        t = balance(t);
-        return t;
+        pull(tree);
+        tree = balance(tree);
+        return tree;
     }
 
-    Node* erase(const ValueType& value, Node* t) {
-        if (t == nullptr) {
-            return t;
-        } else if (t->val < value) {
-            t->right = erase(value, t->right);
-        } else if (value < t->val) {
-            t->left = erase(value, t->left);
+    Node* erase(const ValueType& value, Node* tree) {
+        if (tree == nullptr) {
+            return tree;
+        } else if (tree->val < value) {
+            tree->right = erase(value, tree->right);
+        } else if (value < tree->val) {
+            tree->left = erase(value, tree->left);
         } else {
-            if (t->right) {
-                Node* min = getMin(t->right);
-                t->val = min->val;
-                t->right = erase(min->val, t->right);
-            } else if (t->left) {
-                Node* max = getMax(t->left);
-                t->val = max->val;
-                t->left = erase(max->val, t->left);
+            if (tree->right) {
+                Node* min = getMin(tree->right);
+                tree->val = min->val;
+                tree->right = erase(min->val, tree->right);
+            } else if (tree->left) {
+                Node* max = getMax(tree->left);
+                tree->val = max->val;
+                tree->left = erase(max->val, tree->left);
             } else {
-                if (t->prev) {
-                    t->prev->next = t->next;
+                if (tree->prev) {
+                    tree->prev->next = tree->next;
                 }
-                if (t->next) {
-                    t->next->prev = t->prev;
+                if (tree->next) {
+                    tree->next->prev = tree->prev;
                 }
                 --cnt;
                 return nullptr;
             }
         }
-        pull(t);
-        t = balance(t);
-        return t;
+        pull(tree);
+        tree = balance(tree);
+        return tree;
     }
 
-    int getHeight(Node* t) const {
-        if (t == nullptr) {
+    int getHeight(Node* tree) const {
+        if (tree == nullptr) {
             return -1;
         } else {
-            return t->height;
+            return tree->height;
         }
     }
 
-    Node* getMin(Node* t) const {
-        if (t == nullptr) {
+    Node* getMin(Node* tree) const {
+        if (tree == nullptr) {
             return nullptr;
         }
-        if (t->left == nullptr) {
-            return t;
+        if (tree->left == nullptr) {
+            return tree;
         } else {
-            return getMin(t->left);
+            return getMin(tree->left);
         }
     }
 
-    Node* getMax(Node* t) const {
-        if (t == nullptr) {
+    Node* getMax(Node* tree) const {
+        if (tree == nullptr) {
             return nullptr;
         }
-        if (t->right == nullptr) {
-            return t;
+        if (tree->right == nullptr) {
+            return tree;
         } else {
-            return getMax(t->right);
+            return getMax(tree->right);
         }
     }
 
-    int getDiff(Node* t) const {
-        if (t == nullptr) {
+    int getDiff(Node* tree) const {
+        if (tree == nullptr) {
             return 0;
         } else {
-            return getHeight(t->left) - getHeight(t->right);
+            return getHeight(tree->left) - getHeight(tree->right);
         }
     }
 
-    void pull(Node* t) const {
-        if (t == nullptr) {
+    void pull(Node* tree) const {
+        if (tree == nullptr) {
             return;
         }
-        t->height = std::max(getHeight(t->left), getHeight(t->right)) + 1;
+        tree->height = std::max(getHeight(tree->left), getHeight(tree->right)) + 1;
     }
 
-    Node* balance(Node* t) {
-        if (getDiff(t) < 2 && getDiff(t) > -2) {
-            return t;
-        } else if (getDiff(t) == 2) {
-            if (getDiff(t->left) == -1) {
-                t = bigRotateRight(t);
+    Node* balance(Node* tree) {
+        if (getDiff(tree) < RIGHT_BOUND && getDiff(tree) > LEFT_BOUND) {
+            return tree;
+        } else if (getDiff(tree) == RIGHT_BOUND) {
+            if (getDiff(tree->left) == -1) {
+                tree = bigRotateRight(tree);
             } else {
-                t = rotateRight(t);
+                tree = rotateRight(tree);
             }
         } else {
-            if (getDiff(t->right) == 1) {
-                t = bigRotateLeft(t);
+            if (getDiff(tree->right) == 1) {
+                tree = bigRotateLeft(tree);
             } else {
-                t = rotateLeft(t);
+                tree = rotateLeft(tree);
             }
         }
-        return t;
+        return tree;
     }
 
-    Node* rotateLeft(Node* t) {
-        if (t == nullptr) {
-            return t;
+    Node* rotateLeft(Node* tree) {
+        if (tree == nullptr) {
+            return tree;
         }
-        Node* r = t->right;
-        t->right = r->left;
-        r->left = t;
-        pull(t);
+        Node* r = tree->right;
+        tree->right = r->left;
+        r->left = tree;
+        pull(tree);
         pull(r);
         return r;
     }
 
-    Node* rotateRight(Node* t) {
-        if (t == nullptr) {
-            return t;
+    Node* rotateRight(Node* tree) {
+        if (tree == nullptr) {
+            return tree;
         }
-        Node* l = t->left;
-        t->left = l->right;
-        l->right = t;
-        pull(t);
+        Node* l = tree->left;
+        tree->left = l->right;
+        l->right = tree;
+        pull(tree);
         pull(l);
         return l;
     }
 
-    Node* bigRotateLeft(Node* t) {
-        if (t == nullptr) {
-            return t;
+    Node* bigRotateLeft(Node* tree) {
+        if (tree == nullptr) {
+            return tree;
         }
-        t->right = rotateRight(t->right);
-        return rotateLeft(t);
+        tree->right = rotateRight(tree->right);
+        return rotateLeft(tree);
     }
 
-    Node* bigRotateRight(Node* t) {
-        if (t == nullptr) {
-            return t;
+    Node* bigRotateRight(Node* tree) {
+        if (tree == nullptr) {
+            return tree;
         }
-        t->left = rotateLeft(t->left);
-        return rotateRight(t);
+        tree->left = rotateLeft(tree->left);
+        return rotateRight(tree);
     }
 
-    void free(Node* t) {
-        if (t == nullptr) {
+    void free(Node* tree) {
+        if (tree == nullptr) {
             return;
         }
-        free(t->left);
-        free(t->right);
-        delete t;
+        free(tree->left);
+        free(tree->right);
+        delete tree;
     }
 
     class iterator {
@@ -281,9 +282,9 @@ public:
             last = lst;
         }
 
-        iterator(const iterator& i) {
-            iter = i.iter;
-            last = i.last;
+        iterator(const iterator& it) {
+            iter = it.iter;
+            last = it.last;
         }
 
         ValueType& operator *() const {
@@ -409,7 +410,7 @@ public:
         return iterator(nullptr, getMax(root));
     }
 
-    int size() const {
+    size_t size() const {
         return cnt;
     }
 
@@ -424,8 +425,10 @@ public:
     };
 
 private:
+    const int RIGHT_BOUND = 2;
+    const int LEFT_BOUND = -2;
     Node* root = nullptr;
-    int cnt = 0;
+    size_t cnt = 0;
     std::vector<Node*> to_delete;
 
 };
